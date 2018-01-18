@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Yearly bills' estimated impact on prison population</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style media="screen">
+      text.SvgLabel, g.key text {
+        font: 14px Muli;
+        font-weight: bold;
+      }
+      g.xAxis text {
+        font: 10px Muli;
+      }
+      path.domain {
+        display: none;
+      }
+    </style>
+
+  </head>
+  <body style="background-color: #fafafa;">
+
+    <h1>Bills projected to significantly increase or decrease the prison population</h1>
+    <div class="svgBox" id="svgBox1">
+      <svg id="svg1" height="360">
+
+      </svg>
+    </div>
+
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.12.0/d3.min.js"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+
+  <script type="text/javascript">
+    // Set graph height and margins. Width is 100% of holding container
+      var customHeight = 360;
+      var customMargins = {top: 40, right: 20, bottom: 40, left: 20};
+
+      var data = [
+        {"session":2005,"increase":4,"decrease":0},
+        {"session":2006,"increase":5,"decrease":0},
+        {"session":2007,"increase":8,"decrease":0},
+        {"session":2008,"increase":9,"decrease":1},
+        {"session":2009,"increase":2,"decrease":6},
+        {"session":2010,"increase":3,"decrease":2},
+        {"session":2011,"increase":2,"decrease":3},
+        {"session":2012,"increase":1,"decrease":0},
+        {"session":2013,"increase":0,"decrease":1},
+        {"session":2014,"increase":0,"decrease":1},
+        {"session":2015,"increase":3,"decrease":4},
+        {"session":2016,"increase":4,"decrease":4},
+        {"session":2017,"increase":2,"decrease":8},
+        {"session":2018,"increase":1,"decrease":4}
+      ];
+
+      $(document).ready(function(){
+        $(window).trigger('resize');
+      });
+
+
+      $(window).on('resize', function(){
+
+        $('#svg1').empty();
+        var boundWidth = d3.select("#svgBox1").node().getBoundingClientRect().width;
+        d3.select("#svgBox1").select("svg").attr("width",boundWidth).attr("height",customHeight).style("margin","0px");
+
+        var svg = d3.select("#svg1"),
+        margin = customMargins,
+        width = boundWidth - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom,
+        g = svg.append("g").attr("id","pane").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var barHeight = height/(data.length);
+        var midZoneWidth = 50;
+
+        var x = d3.scaleLinear()
+          .domain([0,9])
+          .range([0,((width-midZoneWidth)/2)]);
+
+        var y = d3.scaleLinear()
+          .domain([0,data.length])
+          .range([height-barHeight,0]);
+
+
+        // Draw Increase Bill bars
+
+        g.selectAll('bar')
+          .data(data)
+          .enter()
+          .append('rect')
+          .classed('bar',true)
+          .classed('barIncrease',true)
+          .attr('x', (x(0)+((width+midZoneWidth)/2)))
+          .attr('width', function(d) {
+            return x(d.increase);
+          })
+          .attr('y', function(d,i) {
+            console.log(i);
+            return y(i)
+          })
+          .attr('height', barHeight)
+          .attr('fill','rgb(255, 95, 0)');
+
+        // Draw Decrease Bill bars
+
+        g.selectAll('bar')
+          .data(data)
+          .enter()
+          .append('rect')
+          .classed('bar',true)
+          .classed('barDecrease',true)
+          .attr('x', (function(d) {
+            return ((width-midZoneWidth)/2 - x(d.decrease))
+          }))
+          .attr('width', function(d) {
+            return x(d.decrease);
+          })
+          .attr('y', function(d,i) {
+            console.log(i);
+            return y(i)
+          })
+          .attr('height', barHeight)
+          .attr('fill', 'rgb(22, 10, 107)');
+
+        // Write year labels
+
+        g.selectAll('year')
+          .data(data)
+          .enter()
+          .append('text')
+          .classed('svgLabel', true)
+          .classed('labelYear', true)
+          .attr('alignment-baseline','middle')
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#aaa')
+          .attr('display', function(d,i) {
+            if (i % 2) {
+              return 'block'
+            }
+            else {
+              return 'none'
+            }
+          })
+          .attr('x', (width/2))
+          .attr('y', function(d,i) {
+            return y(i-.5)
+          })
+          .text(function(d) {
+            return d.session
+          });
+
+        // Add tick marks
+
+        g.append('g')
+          .classed('xAxis', true)
+          .attr('transform', 'translate(' + (width+midZoneWidth)/2 + ',' + (height + 5) + ')')
+          .call(d3.axisBottom(x).ticks(3));
+
+        // Top key
+
+        g.append('g')
+          .classed('key', true)
+          .append('text')
+          .attr('transform', 'translate(' + (width-midZoneWidth)/2 + ')')
+          .attr('text-anchor' , 'end')
+          .text('Decrease')
+          .attr('fill', 'rgb(22, 10, 107)');
+
+        g.append('g')
+          .classed('key', true)
+          .append('text')
+          .attr('transform', 'translate(' + (width+midZoneWidth)/2 + ')')
+          .attr('text-anchor' , 'beginning')
+          .text('Increase')
+          .attr('fill','rgb(255, 95, 0)');
+
+      });
+
+  </script>
+
+
+  </body>
+</html>
